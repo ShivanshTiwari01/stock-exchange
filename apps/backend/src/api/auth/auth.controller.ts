@@ -4,7 +4,7 @@ import { user } from './auth.validation';
 
 import { prisma } from '@repo/db';
 
-export const register = async (req: Request, res: Response) => {
+export const signUp = async (req: Request, res: Response) => {
   const data = user.parse(req.body);
 
   if (!data) {
