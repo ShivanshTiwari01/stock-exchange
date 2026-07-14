@@ -14,12 +14,12 @@ export const signUp = async (req: Request, res: Response) => {
     });
   }
 
-  const { username, email, mobile, password } = data;
+  const { username, password } = data;
 
   try {
     const userExists = await prisma.user.findFirst({
       where: {
-        OR: [{ username }, { email }, { mobile }],
+        username,
       },
     });
 
@@ -35,8 +35,6 @@ export const signUp = async (req: Request, res: Response) => {
     const user = await prisma.user.create({
       data: {
         username,
-        email,
-        mobile,
         password: hashedPassword,
       },
     });
