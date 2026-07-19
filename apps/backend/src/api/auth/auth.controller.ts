@@ -48,6 +48,7 @@ export const signUp = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -99,6 +100,7 @@ export const signIn = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: true,
       message: 'Internal server error',
