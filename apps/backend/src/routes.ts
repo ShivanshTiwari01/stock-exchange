@@ -6,9 +6,10 @@ import orderRouter from './api/order/order.routes';
 const router = express.Router();
 
 router.use('/auth', authRouter);
-
-router.use('/market', marketRouter);
-
 router.use('/order', orderRouter);
+
+// Admin Routes
+
+router.use('/admin', marketRouter);
 
 export default router;

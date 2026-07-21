@@ -1,20 +1,20 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { user } from './auth.validation';
+import { userSchema } from './auth.validation';
 
 import { prisma } from '@repo/db';
 
 export const signUp = async (req: Request, res: Response) => {
-  const data = user.parse(req.body);
+  const result = userSchema.safeParse(req.body);
 
-  if (!data) {
+  if (!result.success) {
     return res.status(400).json({
       success: false,
       message: 'Invalid input data',
     });
   }
 
-  const { username, password } = data;
+  const { username, password } = result.data;
 
   try {
     const userExists = await prisma.user.findFirst({
@@ -57,16 +57,16 @@ export const signUp = async (req: Request, res: Response) => {
 };
 
 export const signIn = async (req: Request, res: Response) => {
-  const data = user.parse(req.body);
+  const result = userSchema.safeParse(req.body);
 
-  if (!data) {
+  if (!result.success) {
     return res.status(400).json({
       success: false,
       message: 'Invalid input data',
     });
   }
 
-  const { username, password } = req.body;
+  const { username, password } = result.data;
 
   try {
     const userExists = await prisma.user.findFirst({
