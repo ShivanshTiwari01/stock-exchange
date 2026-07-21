@@ -23,6 +23,23 @@ model User {
   takerFills Fill[]   @relation("taker")
 }
 
+enum TradingStatus {
+  Listed
+  Suspended
+  Delisted
+}
+
+model Market {
+  id            String        @id @default(uuid())
+  name          String
+  symbol        String        @unique
+  logo          String?
+  description   String?
+  tradingStatus TradingStatus @default(Listed)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt()
+}
+
 enum OrderType {
   Market
   Limit
@@ -31,12 +48,6 @@ enum OrderType {
 enum Side {
   Bid
   Ask
-}
-
-model Market {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
 }
 
 enum OrderStatus {
