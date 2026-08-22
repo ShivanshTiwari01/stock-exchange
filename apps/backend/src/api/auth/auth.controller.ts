@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { userSchema } from './auth.validation';
 
 import { prisma } from '@repo/db';
+import { signAccessToken, signRefreshToken } from '../../helper/authentication';
 
 export const signUp = async (req: Request, res: Response) => {
   const result = userSchema.safeParse(req.body);
@@ -39,11 +40,22 @@ export const signUp = async (req: Request, res: Response) => {
       },
     });
 
+    const accessToken = signAccessToken({
+      userId: user.id,
+    });
+
+    const refreshToken = signRefreshToken({
+      userId: user.id,
+    });
+
     return res.status(201).json({
       success: true,
       message: 'user created successfully',
       data: {
-        userId: user.id,
+        token: {
+          accessToken,
+          refreshToken,
+        },
         username,
       },
     });
@@ -91,18 +103,62 @@ export const signIn = async (req: Request, res: Response) => {
       });
     }
 
+    const accessToken = signAccessToken({
+      userId: userExists.id,
+    });
+
+    const refreshToken = signRefreshToken({
+      userId: userExists.id,
+    });
+
     return res.status(200).json({
       success: true,
       message: 'User logged in succesfully',
       data: {
-        userId: userExists.id,
+        token: {
+          accessToken,
+          refreshToken,
+        },
         username,
       },
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+export const whoami = async (req: Request, res: Response) => {
+  const { userId } = req.user!;
+
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'user not found',
+      });
+    }
+
+    return res.status(200).json({
       success: true,
+      message: 'user found succesfully',
+      data: {
+        username: user.username,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
       message: 'Internal server error',
     });
   }
