@@ -1,159 +1,92 @@
-# Turborepo starter
+# Stock Exchange
 
-This Turborepo starter is maintained by the Turborepo core team.
+A centralized exchange platform organized as a TypeScript monorepo. The system is designed around a matching engine that owns balances and order books, backend services that expose the exchange API, Redis Streams for communication between services, and a WebSocket service for real-time market and account updates.
 
-## Using this example
+## Architecture
 
-Run the following command:
+The repository is organized with [Turborepo](https://turbo.build/repo) and [Bun](https://bun.sh/).
 
-```sh
-npx create-turbo@latest
+```text
+apps/
+  backend/   HTTP API and exchange-facing application logic
+  engine/    Order matching, order books, and in-engine balances
+  ws/        Real-time WebSocket updates
+  tests/     Cross-service and end-to-end tests
+packages/
+  common/             Shared domain types and utilities
+  db/                 Database access
+  ui/                 Shared user-interface components
+  eslint-config/      Shared lint configuration
+  typescript-config/  Shared TypeScript configuration
 ```
 
-## What's inside?
+Redis Streams provide asynchronous request and response queues between the backend and the engine. This separation keeps matching and balance mutations within the engine while allowing API and real-time services to communicate through explicit messages.
 
-This Turborepo includes the following packages/apps:
+## Prerequisites
 
-### Apps and Packages
+- [Bun](https://bun.sh/) 1.3 or newer
+- Node.js 18 or newer for tooling compatibility
+- Redis
+- A PostgreSQL-compatible database
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## Getting started
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+Clone the repository and install the workspace dependencies:
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+git clone <repository-url>
+cd stock-exchange
+bun install
 ```
 
-Without global `turbo`, use your package manager:
+Configure the environment variables required by the individual applications, then start the development tasks:
 
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
+```bash
+bun run dev
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Turborepo filters can be used to run one workspace at a time:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+```bash
+bunx turbo run dev --filter=backend
+bunx turbo run dev --filter=engine
+bunx turbo run dev --filter=ws
 ```
 
-Without global `turbo`:
+## Common commands
 
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
+```bash
+bun run dev          # Run development tasks
+bun run build        # Build all workspaces
+bun run lint         # Lint all workspaces
+bun run check-types  # Type-check all workspaces
+bun run format       # Format TypeScript and Markdown files
+bun test             # Run Bun tests
 ```
 
-### Develop
+## Development principles
 
-To develop all apps and packages, run the following command:
+- Follow test-driven development: begin with a failing test, implement the smallest correct change, and refactor with the tests passing.
+- Keep matching, order-book, and balance transitions deterministic and owned by the engine.
+- Treat Redis messages as versioned contracts and validate data at service boundaries.
+- Use integer quantities or a precise decimal representation for monetary values; do not use floating-point arithmetic for balances or prices.
+- Preserve ordering, idempotency, and traceability across asynchronous workflows.
+- Never commit credentials, private keys, or production environment values.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Contributing
 
-```sh
-cd my-turborepo
-turbo dev
-```
+Contributions are welcome. To contribute:
 
-Without global `turbo`, use your package manager:
+1. Fork the repository and create a focused branch from the default branch.
+2. Add or update tests before changing behavior.
+3. Keep changes small, scoped, and consistent with the existing workspace boundaries.
+4. Run the relevant tests, lint checks, type checks, and build locally.
+5. Open a pull request describing the problem, the approach, and how the change was verified.
 
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
-```
+Bug reports and feature proposals should include enough context to reproduce or evaluate the request. Security vulnerabilities should be reported privately to the maintainers rather than through a public issue.
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+By contributing, you agree that your contributions will be licensed under the MIT License.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## License
 
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+This project is licensed under the [MIT License](LICENSE).

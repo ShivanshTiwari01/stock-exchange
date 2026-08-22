@@ -13,7 +13,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
   jwt.verify(
     token,
-    process.env.JWT_SECRET as string,
+    process.env.JWT_ACCESS_SECRET as string,
     async (error: any, decoded: any) => {
       if (error) {
         return res.status(401).json({
