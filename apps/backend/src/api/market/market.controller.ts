@@ -125,6 +125,12 @@ export const updateMarket = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: 'Market updated successfully',
+      data: {
+        updatedMarket: {
+          name: updatedMarket.name,
+          symbol: updatedMarket.symbol,
+        },
+      },
     });
   } catch (error) {
     return res.status(500).json({
